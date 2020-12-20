@@ -64,6 +64,19 @@ export function createShowHideFn(editor: Editor) {
                 },
             },
             {
+                $elem: $(`<span>${t('查看链接')}</span>`),
+                onClick: (editor: Editor, $node: DomElement) => {
+                    let link = $node.attr('data-href')
+                    if (link) {
+                        link = decodeURIComponent(link)
+                        console.log(link)
+                        window.open(link, '_target')
+                    }
+                    // 返回 true，表示执行完之后，隐藏 tooltip。否则不隐藏。
+                    return true
+                },
+            },
+            {
                 $elem: $(`<span>${t('重置')}</span>`),
                 onClick: (editor: Editor, $node: DomElement) => {
                     $node.removeAttr('width')
