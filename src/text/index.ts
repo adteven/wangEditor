@@ -54,6 +54,8 @@ type TextEventHooks = {
     dropListMenuHoverEvents: (() => void)[]
     /** 点击分割线时 */
     splitLineEvents: ((e: DomElement) => void)[]
+    /** 视频点击事件 */
+    videoClickEvents: ((e: DomElement) => void)[]
 }
 
 class Text {
@@ -85,6 +87,7 @@ class Text {
             menuClickEvents: [],
             dropListMenuHoverEvents: [],
             splitLineEvents: [],
+            videoClickEvents: [],
         }
     }
 
@@ -550,6 +553,55 @@ class Text {
             if (e.keyCode !== 13) return
             const enterDownEvents = eventHooks.enterDownEvents
             enterDownEvents.forEach(fn => fn(e))
+        })
+
+        // 视频 click
+        $textElem.on('click', (e: Event) => {
+            console.log(' $textElem click -------->', e, $(e.target).getNodeName())
+            // 存储视频
+            let $video: DomElement | null = null
+
+            const target = e.target as HTMLElement
+            const $target = $(target)
+
+            //处理视频点击 简单的video 标签
+            if ($target.getNodeName() === 'VIDEO') {
+                // 当前点击的就是视频
+                e.stopPropagation()
+                $video = $target
+            }
+
+            // 处理复杂的video 嵌套dom
+            let nodeTop: DomElement | null = null
+            if (!$video) {
+                nodeTop = $target.getNodeTop(editor)
+                console.log('当前选中元素最顶部dom----->', nodeTop, nodeTop.children())
+                const findVideo = (Dlist: DomElement | null) => {
+                    if (!Dlist) return
+                    const dlist = Dlist.elems
+                    for (let x = 0; x < dlist.length; x++) {
+                        if ($(dlist[x]).getNodeName() === 'VIDEO') {
+                            $video = nodeTop
+                            break
+                        } else if (dlist[x].children.length !== 0) {
+                            for (let y = 0; y < dlist[x].children.length; y++) {
+                                if ($(dlist[x].children[y]).getNodeName() === 'VIDEO') {
+                                    $video = nodeTop
+                                    break
+                                } else if (dlist[x].children[y].children.length !== 0) {
+                                    findVideo($(dlist[x].children[y]))
+                                }
+                            }
+                        }
+                    }
+                }
+                findVideo(nodeTop.children())
+            }
+            console.log('处理后的targeDom-------->', $video)
+            if (!$video) return // 没有点击视频，则返回
+
+            const videoClickEvents = eventHooks.videoClickEvents
+            videoClickEvents.forEach(fn => fn($video as DomElement))
         })
     }
 }
