@@ -101,6 +101,9 @@ function _bindInput(editor: Editor) {
  */
 function _blurHandler(editor: Editor) {
     const config = editor.config
+    // 失去焦点销毁所有tooltip, 不能放在config.onblur中，用户自定义onblur事件会被覆盖
+    let event: Event
+    editor.txt.eventHooks.toolbarClickEvents.forEach(fn => fn(event))
     const onblur = config.onblur
     const currentHtml = editor.txt.html() || ''
     onblur(currentHtml)
